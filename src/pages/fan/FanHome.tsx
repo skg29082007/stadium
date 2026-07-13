@@ -12,7 +12,6 @@ import {
 } from 'lucide-react';
 import { t, getTextDirection } from '../../engine/multilingual';
 import { validateChatInput, createRateLimiter } from '../../utils/sanitize';
-import { getTransitRecommendation } from '../../engine/transit-engine';
 
 const chatLimiter = createRateLimiter(10, 30000); // 10 messages per 30s
 

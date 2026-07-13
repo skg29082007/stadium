@@ -146,7 +146,7 @@ export function getStaggeredDepartureSuggestion(matchMinute: number): string {
   return 'Crowds subsiding. All transit options available. Shuttle Route B has shortest wait (8 min).';
 }
 
-export function getTransitRecommendation(currentLoad: Record<string, number>): string {
+export function getTransitRecommendation(_currentLoad: Record<string, number>): string {
   const options = getTransitOptions();
   const bestOption = options
     .filter(o => o.status !== 'cancelled' && o.currentLoad < 80)

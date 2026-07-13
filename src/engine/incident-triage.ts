@@ -52,7 +52,10 @@ export function classifyIncident(description: string): { category: IncidentCateg
   let bestScore = 0;
 
   for (const [cat, keywords] of Object.entries(categoryKeywords)) {
-    const score = keywords.filter(kw => lower.includes(kw)).length;
+    const score = keywords.filter(kw => {
+      const regex = new RegExp(`\\b${kw}\\b`, 'i');
+      return regex.test(lower);
+    }).length;
     if (score > bestScore) {
       bestScore = score;
       bestCategory = cat as IncidentCategory;
@@ -62,7 +65,8 @@ export function classifyIncident(description: string): { category: IncidentCateg
   // Classify priority
   let priority: IncidentPriority = 'MEDIUM';
   for (const [kw, p] of Object.entries(priorityKeywords)) {
-    if (lower.includes(kw)) {
+    const regex = new RegExp(`\\b${kw}\\b`, 'i');
+    if (regex.test(lower)) {
       const levels: IncidentPriority[] = ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'];
       if (levels.indexOf(p) > levels.indexOf(priority)) {
         priority = p;

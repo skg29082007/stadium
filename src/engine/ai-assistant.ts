@@ -10,7 +10,7 @@ import { getNodeById, findNearestByType, getNodesByType, type GraphNode } from '
 import { getCurrentMatch, matchSchedule } from '../data/match-schedule';
 import { getCurrentWeather } from '../data/weather-data';
 import { formatDuration } from '../utils/formatters';
-import { getTransitOptions, getParkingLots, getStaggeredDepartureSuggestion, getTransitRecommendation } from './transit-engine';
+import { getTransitOptions, getParkingLots, getStaggeredDepartureSuggestion } from './transit-engine';
 import { getCurrentSustainability } from './sustainability-engine';
 
 export interface ChatMessage {
@@ -182,7 +182,7 @@ const handlers: PatternHandler[] = [
 
   // Match info / Score
   {
-    patterns: [/(?:score|match|game|result|who|playing|lineup|schedule|kick\s*off|what time)/i],
+    patterns: [/(?:score|match|game|result|who|playing|lineup|kick\s*off|what time)/i],
     handler: () => {
       const match = getCurrentMatch();
       const weather = getCurrentWeather();
@@ -303,7 +303,7 @@ const handlers: PatternHandler[] = [
   // Sustainability / Recycling / Water
   {
     patterns: [/(?:recycle|recycling|compost|trash|bin|waste|water fountain|refill|sustainability|green|eco|carbon|environment)/i],
-    handler: (_match, ctx) => {
+    handler: (_match, _ctx) => {
       const sus = getCurrentSustainability();
 
       let content = `♻️ **Sustainability at MetLife Stadium**\n\n`;

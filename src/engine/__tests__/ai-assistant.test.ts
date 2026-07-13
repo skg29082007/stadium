@@ -3,7 +3,7 @@ import { processMessage, getWelcomeMessage, type AssistantContext } from '../ai-
 
 const defaultContext: AssistantContext = {
   currentZone: 'gate-a',
-  seatSection: 217,
+  seatSection: 105,
   seatRow: 12,
   seatNumber: 8,
   language: 'en',
@@ -20,7 +20,7 @@ describe('ai-assistant — processMessage', () => {
 
   it('responds to seat finding queries', () => {
     const result = processMessage('Find my seat', defaultContext);
-    expect(result.content).toContain('217');
+    expect(result.content).toContain('105');
     expect(result.content).toContain('12');
     expect(result.content).toContain('8');
   });
