@@ -45,7 +45,7 @@ export default function Landing() {
   };
 
   return (
-    <div style={{
+    <div role="main" aria-label="Welcome to Smart Stadium" style={{
       minHeight: '100vh',
       background: 'var(--bg-primary)',
       display: 'flex',
@@ -101,6 +101,7 @@ export default function Landing() {
             key={mode.key}
             onClick={() => handleSelect(mode)}
             className="animate-slide-up"
+            aria-label={`${mode.title}: ${mode.subtitle}`}
             style={{
               background: 'var(--bg-card)',
               border: '1px solid var(--border-color)',

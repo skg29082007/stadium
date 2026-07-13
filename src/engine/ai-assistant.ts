@@ -10,6 +10,8 @@ import { getNodeById, findNearestByType, getNodesByType, type GraphNode } from '
 import { getCurrentMatch, matchSchedule } from '../data/match-schedule';
 import { getCurrentWeather } from '../data/weather-data';
 import { formatDuration } from '../utils/formatters';
+import { getTransitOptions, getParkingLots, getStaggeredDepartureSuggestion } from './transit-engine';
+import { getCurrentSustainability } from './sustainability-engine';
 
 export interface ChatMessage {
   id: string;
@@ -180,7 +182,7 @@ const handlers: PatternHandler[] = [
 
   // Match info / Score
   {
-    patterns: [/(?:score|match|game|result|who|playing|lineup|schedule|kick\s*off|what time)/i],
+    patterns: [/(?:score|match|game|result|who|playing|lineup|kick\s*off|what time)/i],
     handler: () => {
       const match = getCurrentMatch();
       const weather = getCurrentWeather();
@@ -271,6 +273,55 @@ const handlers: PatternHandler[] = [
       );
     },
   },
+
+  // Transit / Transportation
+  {
+    patterns: [/(?:transit|transport|bus|train|shuttle|parking|uber|lyft|ride|how do i get home|how to leave|departure|car|NJ\s*transit|path)/i],
+    handler: (_match, _ctx) => {
+      const options = getTransitOptions();
+      const lots = getParkingLots();
+      const suggestion = getStaggeredDepartureSuggestion(45);
+
+      let content = `🚆 **Transit & Transportation**\n\n`;
+      content += `**Public Transit:**\n`;
+      options.filter(o => o.type !== 'rideshare').forEach(o => {
+        content += `${o.icon} **${o.name}**\n`;
+        content += `   Status: ${o.status === 'on-time' ? '🟢' : '🟡'} ${o.status} · Next: ${o.nextDeparture} · ${o.estimatedMinutes}min to ${o.destination}\n\n`;
+      });
+
+      content += `**Parking:**\n`;
+      lots.forEach(l => {
+        content += `🅿️ ${l.name}: ${l.occupancy}% full · Exit time: ~${l.estimatedExitMinutes}min · EV chargers: ${l.evChargersAvailable}/${l.evChargers}\n`;
+      });
+
+      content += `\n💡 ${suggestion}`;
+
+      return msg(content, ['Best way to Times Square?', 'When should I leave?', 'Find my car']);
+    },
+  },
+
+  // Sustainability / Recycling / Water
+  {
+    patterns: [/(?:recycle|recycling|compost|trash|bin|waste|water fountain|refill|sustainability|green|eco|carbon|environment)/i],
+    handler: (_match, _ctx) => {
+      const sus = getCurrentSustainability();
+
+      let content = `♻️ **Sustainability at MetLife Stadium**\n\n`;
+
+      if (sus) {
+        content += `🌍 Sustainability Score: **${sus.overallScore}/100**\n`;
+        content += `♻️ Waste Diversion Rate: **${sus.waste.diversionRate}%**\n`;
+        content += `⚡ Renewable Energy: **${sus.energy.renewablePercent}%**\n\n`;
+      }
+
+      content += `**Recycling Stations** are located at every concourse corner — look for the green bins.\n\n`;
+      content += `**Water Refill Stations** are next to every restroom area.\n\n`;
+      content += `💧 Bring a reusable bottle! Single-use plastic reduction is a key FIFA 2026 initiative.\n\n`;
+      content += `🌱 MetLife Stadium uses 35% renewable energy, recycles rainwater, and offsets 25% of match-day carbon emissions.`;
+
+      return msg(content, ['Find nearest water fountain', 'Where can I recycle?', 'Back to my seat']);
+    },
+  },
 ];
 
 // Default fallback
@@ -290,7 +341,7 @@ function defaultResponse(): ChatMessage {
 }
 
 export function processMessage(userMessage: string, context: AssistantContext): ChatMessage {
-  const text = userMessage.trim();
+  const text = userMessage.trim().slice(0, 1000); // Limit input length
   if (!text) return defaultResponse();
 
   for (const handler of handlers) {

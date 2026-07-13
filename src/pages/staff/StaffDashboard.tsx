@@ -56,10 +56,11 @@ export default function StaffDashboard() {
               value={reportDesc}
               onChange={(e) => setReportDesc(e.target.value)}
               placeholder="Describe the incident..."
+              aria-label="Incident description"
               style={{ flex: 1 }}
               onKeyDown={(e) => e.key === 'Enter' && handleReport()}
             />
-            <select value={reportZone} onChange={(e) => setReportZone(e.target.value)} style={{ width: 150 }}>
+            <select value={reportZone} onChange={(e) => setReportZone(e.target.value)} style={{ width: 150 }} aria-label="Zone selector">
               {stadiumZones.map(z => (
                 <option key={z.id} value={z.id}>{z.name}</option>
               ))}
@@ -126,7 +127,7 @@ export default function StaffDashboard() {
               }}>{myIncidents.length}</span>
             )}
           </h3>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, maxHeight: 400, overflowY: 'auto' }}>
+          <div aria-live="polite" aria-label="Active incidents list" style={{ display: 'flex', flexDirection: 'column', gap: 8, maxHeight: 400, overflowY: 'auto' }}>
             {myIncidents.length === 0 && (
               <div style={{ padding: 30, textAlign: 'center', color: 'var(--text-tertiary)', fontSize: 'var(--text-sm)' }}>
                 <CheckCircle2 size={30} style={{ opacity: 0.3, marginBottom: 8 }} />

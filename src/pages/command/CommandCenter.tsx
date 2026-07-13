@@ -45,7 +45,7 @@ export default function CommandCenter() {
   }));
 
   return (
-    <div className="animate-fade-in">
+    <div className="animate-fade-in" role="region" aria-label="Command center overview">
       {/* Page Header */}
       <div style={{ marginBottom: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <div>
@@ -298,7 +298,7 @@ function RiskGaugeMini({ score }: { score: number }) {
 
   return (
     <div style={{ position: 'relative', width: 90, height: 90, flexShrink: 0 }}>
-      <svg width="90" height="90" viewBox="0 0 90 90">
+      <svg width="90" height="90" viewBox="0 0 90 90" role="img" aria-label={`Risk score: ${score} out of 100`}>
         {/* Background circle */}
         <circle cx="45" cy="45" r="36" fill="none" stroke="var(--bg-tertiary)" strokeWidth="6" />
         {/* Progress arc */}

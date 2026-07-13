@@ -48,6 +48,8 @@ export default function IncidentManager() {
           <button key={status}
             className={`btn btn-sm ${filter === status ? 'btn-primary' : 'btn-ghost'}`}
             onClick={() => setFilter(status)}
+            aria-label={`Filter by ${status === 'all' ? 'all statuses' : status.replace('_', ' ')}`}
+            aria-pressed={filter === status}
           >
             {status === 'all' ? 'All' : status.replace('_', ' ')}
             <span style={{
@@ -64,6 +66,7 @@ export default function IncidentManager() {
           <select
             value={priorityFilter}
             onChange={(e) => setPriorityFilter(e.target.value)}
+            aria-label="Filter by priority"
             style={{
               padding: '6px 28px 6px 10px', borderRadius: 8, fontSize: 'var(--text-xs)',
               background: 'var(--bg-tertiary)', border: '1px solid var(--border-color)',
@@ -228,7 +231,7 @@ function Modal({ children, onClose }: { children: React.ReactNode; onClose: () =
         border: '1px solid var(--border-color)', borderRadius: 16,
         padding: 28, maxWidth: 560, width: '90%', maxHeight: '80vh', overflowY: 'auto',
       }}>
-        <button onClick={onClose} style={{
+        <button onClick={onClose} aria-label="Close dialog" style={{
           position: 'absolute', top: 16, right: 16,
           color: 'var(--text-tertiary)',
         }}><X size={18} /></button>

@@ -110,7 +110,7 @@ export default function CrowdAnalytics() {
 
       {/* Bottleneck Alerts */}
       {bottleneckZones.length > 0 && (
-        <div style={{
+        <div role="alert" aria-live="assertive" style={{
           padding: '14px 20px', borderRadius: 12, marginBottom: 20,
           background: 'rgba(239, 83, 80, 0.08)',
           border: '1px solid rgba(239, 83, 80, 0.2)',
@@ -133,7 +133,7 @@ export default function CrowdAnalytics() {
             position: 'relative', background: 'var(--bg-primary)',
             borderRadius: 12, overflow: 'hidden',
           }}>
-            <canvas ref={canvasRef} width={440} height={440} style={{ width: '100%', height: 'auto' }} />
+            <canvas ref={canvasRef} width={440} height={440} style={{ width: '100%', height: 'auto' }} role="img" aria-label="Live stadium heatmap showing crowd density by zone" />
           </div>
           {/* Legend */}
           <div style={{ display: 'flex', justifyContent: 'center', gap: 16, marginTop: 12 }}>
