@@ -11,6 +11,7 @@ import CrowdAnalytics from './pages/command/CrowdAnalytics';
 import RiskDashboard from './pages/command/RiskDashboard';
 import ScenarioSim from './pages/command/ScenarioSim';
 import IncidentManager from './pages/command/IncidentManager';
+import SustainabilityDashboard from './pages/command/SustainabilityDashboard';
 import FanHome from './pages/fan/FanHome';
 import FanNavigation from './pages/fan/FanNavigation';
 import StaffDashboard from './pages/staff/StaffDashboard';
@@ -74,6 +75,7 @@ export default function App() {
         <Route path="/command/risk" element={<RiskDashboard />} />
         <Route path="/command/scenarios" element={<ScenarioSim />} />
         <Route path="/command/incidents" element={<IncidentManager />} />
+        <Route path="/command/sustainability" element={<SustainabilityDashboard />} />
         <Route path="/staff" element={<StaffDashboard />} />
       </Route>
       <Route path="/fan" element={<FanHome />} />

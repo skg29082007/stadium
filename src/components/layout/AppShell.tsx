@@ -7,7 +7,7 @@ import { MATCH_PHASES } from '../../utils/constants';
 import { useState, useEffect, useMemo } from 'react';
 import {
   LayoutDashboard, Users, AlertTriangle, Activity,
-  Radio, Shield, Menu, X, ChevronDown
+  Radio, Shield, Menu, X, ChevronDown, Leaf
 } from 'lucide-react';
 
 const navItems = [
@@ -16,6 +16,7 @@ const navItems = [
   { to: '/command/risk', label: 'Risk Dashboard', icon: AlertTriangle },
   { to: '/command/scenarios', label: 'Scenarios', icon: Activity },
   { to: '/command/incidents', label: 'Incidents', icon: Shield },
+  { to: '/command/sustainability', label: 'Sustainability', icon: Leaf },
   { to: '/staff', label: 'Staff Ops', icon: Radio },
 ];
 
@@ -39,8 +40,11 @@ export default function AppShell() {
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--bg-primary)' }}>
+      {/* Skip Navigation — Accessibility */}
+      <a href="#main-content" className="skip-nav">Skip to main content</a>
+
       {/* Sidebar */}
-      <aside style={{
+      <aside aria-label="Main navigation" style={{
         width: 260,
         background: 'var(--bg-secondary)',
         borderRight: '1px solid var(--border-color)',
@@ -77,7 +81,7 @@ export default function AppShell() {
         </div>
 
         {/* Nav Items */}
-        <nav style={{ flex: 1, padding: '12px 10px', display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <nav role="navigation" aria-label="Stadium operations" style={{ flex: 1, padding: '12px 10px', display: 'flex', flexDirection: 'column', gap: 2 }}>
           {navItems.map(item => (
             <NavLink
               key={item.to}
@@ -135,7 +139,7 @@ export default function AppShell() {
       {/* Main Content */}
       <div style={{ flex: 1, marginLeft: 260, display: 'flex', flexDirection: 'column' }}>
         {/* Top Bar */}
-        <header style={{
+        <header role="banner" aria-label="Match status bar" style={{
           height: 56, padding: '0 24px',
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           borderBottom: '1px solid var(--border-color)',
@@ -143,8 +147,8 @@ export default function AppShell() {
           position: 'sticky', top: 0, zIndex: 20,
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-            <button className="btn-icon btn-ghost mobile-menu" onClick={() => setMobileNavOpen(!mobileNavOpen)} style={{ display: 'none' }}>
-              {mobileNavOpen ? <X size={20} /> : <Menu size={20} />}
+            <button className="btn-icon btn-ghost mobile-menu" onClick={() => setMobileNavOpen(!mobileNavOpen)} style={{ display: 'none' }} aria-label={mobileNavOpen ? 'Close navigation menu' : 'Open navigation menu'} aria-expanded={mobileNavOpen}>
+              {mobileNavOpen ? <X size={20} aria-hidden="true" /> : <Menu size={20} aria-hidden="true" />}
             </button>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <span className="status-dot live" />
@@ -157,8 +161,8 @@ export default function AppShell() {
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 'var(--text-xs)', color: 'var(--text-secondary)' }}>
-              <Users size={14} />
-              <span className="mono">{snapshot ? snapshot.totalAttendance.toLocaleString() : '—'}</span>
+              <Users size={14} aria-hidden="true" />
+              <span className="mono" aria-live="polite" aria-label={`Current attendance: ${snapshot ? snapshot.totalAttendance.toLocaleString() : 'loading'}`}>{snapshot ? snapshot.totalAttendance.toLocaleString() : '—'}</span>
             </div>
             <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)' }} className="mono">
               {formatTimeShort(now)}
@@ -174,7 +178,7 @@ export default function AppShell() {
         </header>
 
         {/* Page Content */}
-        <main style={{ flex: 1, padding: 24, overflowY: 'auto' }}>
+        <main id="main-content" role="main" aria-label="Page content" style={{ flex: 1, padding: 24, overflowY: 'auto' }}>
           <Outlet />
         </main>
       </div>

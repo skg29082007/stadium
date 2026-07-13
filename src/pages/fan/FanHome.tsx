@@ -8,8 +8,13 @@ import { getCurrentWeather } from '../../data/weather-data';
 import { SUPPORTED_LANGUAGES } from '../../utils/constants';
 import {
   Send, ArrowLeft, MapPin, Utensils, Droplets, Shield,
-  Ticket, QrCode
+  Ticket, QrCode, Train
 } from 'lucide-react';
+import { t, getTextDirection } from '../../engine/multilingual';
+import { validateChatInput, createRateLimiter } from '../../utils/sanitize';
+import { getTransitRecommendation } from '../../engine/transit-engine';
+
+const chatLimiter = createRateLimiter(10, 30000); // 10 messages per 30s
 
 export default function FanHome() {
   const { seatSection, seatRow, seatNumber, currentZone, language, setLanguage } = useAppStore();
@@ -30,10 +35,26 @@ export default function FanHome() {
     const msg = text || input.trim();
     if (!msg) return;
 
+    // Rate limiting
+    if (!chatLimiter()) return;
+
+    // Input validation & sanitization
+    const { valid, sanitized, error } = validateChatInput(msg);
+    if (!valid) {
+      const errorMsg: ChatMessage = {
+        id: `e-${Date.now()}`,
+        role: 'assistant',
+        content: error || 'Invalid input. Please try again.',
+        timestamp: Date.now(),
+      };
+      setMessages(prev => [...prev, errorMsg]);
+      return;
+    }
+
     const userMsg: ChatMessage = {
       id: `u-${Date.now()}`,
       role: 'user',
-      content: msg,
+      content: sanitized,
       timestamp: Date.now(),
     };
     setMessages(prev => [...prev, userMsg]);
@@ -42,7 +63,7 @@ export default function FanHome() {
 
     // Simulate AI thinking delay
     setTimeout(() => {
-      const response = processMessage(msg, {
+      const response = processMessage(sanitized, {
         currentZone,
         seatSection,
         seatRow,
@@ -63,7 +84,7 @@ export default function FanHome() {
   };
 
   return (
-    <div data-theme="light" style={{
+    <div data-theme="light" dir={getTextDirection(language)} style={{
       minHeight: '100vh',
       background: 'var(--bg-primary)',
       display: 'flex', flexDirection: 'column',
@@ -78,8 +99,8 @@ export default function FanHome() {
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         position: 'sticky', top: 0, zIndex: 10,
       }}>
-        <NavLink to="/" style={{ color: 'var(--text-secondary)', display: 'flex', alignItems: 'center' }}>
-          <ArrowLeft size={20} />
+        <NavLink to="/" style={{ color: 'var(--text-secondary)', display: 'flex', alignItems: 'center' }} aria-label="Back to home">
+          <ArrowLeft size={20} aria-hidden="true" />
         </NavLink>
         <div style={{ textAlign: 'center' }}>
           <div style={{ fontWeight: 700, fontSize: 'var(--text-sm)', color: 'var(--text-primary)' }}>
@@ -90,8 +111,8 @@ export default function FanHome() {
           </div>
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
-          <button onClick={() => setShowQR(!showQR)} style={{ color: 'var(--text-secondary)' }}>
-            <QrCode size={18} />
+          <button onClick={() => setShowQR(!showQR)} style={{ color: 'var(--text-secondary)' }} aria-label="Show QR code">
+            <QrCode size={18} aria-hidden="true" />
           </button>
           <LanguageDropdown language={language} setLanguage={setLanguage} />
         </div>
@@ -122,13 +143,15 @@ export default function FanHome() {
         borderBottom: '1px solid var(--border-color)',
       }}>
         {[
-          { label: 'Find My Seat', icon: MapPin, msg: 'Find my seat' },
-          { label: 'Restroom', icon: Droplets, msg: 'Nearest restroom' },
-          { label: 'Food', icon: Utensils, msg: 'Find food' },
-          { label: 'Emergency', icon: Shield, msg: 'Medical help' },
+          { label: t('find_seat', language), icon: MapPin, msg: 'Find my seat' },
+          { label: t('restroom', language), icon: Droplets, msg: 'Nearest restroom' },
+          { label: t('food', language), icon: Utensils, msg: 'Find food' },
+          { label: t('transit', language), icon: Train, msg: 'Transit options' },
+          { label: t('emergency', language), icon: Shield, msg: 'Medical help' },
         ].map(action => (
           <button key={action.label}
             onClick={() => handleSend(action.msg)}
+            aria-label={action.label}
             style={{
               padding: '8px 14px', borderRadius: 20,
               background: 'var(--bg-tertiary)',
@@ -147,7 +170,7 @@ export default function FanHome() {
       </div>
 
       {/* Chat Messages */}
-      <div style={{
+      <div role="log" aria-label="Chat messages" aria-live="polite" style={{
         flex: 1, overflowY: 'auto',
         padding: '16px', display: 'flex', flexDirection: 'column', gap: 12,
       }}>
@@ -199,7 +222,7 @@ export default function FanHome() {
 
         {/* Typing indicator */}
         {isTyping && (
-          <div style={{ display: 'flex', gap: 4, padding: '12px 16px', maxWidth: 80 }}>
+          <div role="status" aria-label="AI is typing" style={{ display: 'flex', gap: 4, padding: '12px 16px', maxWidth: 80 }}>
             {[0, 1, 2].map(i => (
               <div key={i} style={{
                 width: 8, height: 8, borderRadius: '50%',
@@ -224,7 +247,9 @@ export default function FanHome() {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="Ask me anything... 🏟️"
+          placeholder={t('ask_anything', language)}
+          aria-label="Chat message input"
+          maxLength={1000}
           style={{
             flex: 1, padding: '10px 16px', borderRadius: 24,
             background: 'var(--bg-tertiary)',
@@ -235,6 +260,7 @@ export default function FanHome() {
         <button
           onClick={() => handleSend()}
           disabled={!input.trim()}
+          aria-label="Send message"
           style={{
             width: 40, height: 40, borderRadius: '50%',
             background: input.trim() ? 'linear-gradient(135deg, #6c5ce7, #4a3db5)' : 'var(--bg-tertiary)',
@@ -243,7 +269,7 @@ export default function FanHome() {
             transition: 'all 0.2s',
           }}
         >
-          <Send size={16} />
+          <Send size={16} aria-hidden="true" />
         </button>
       </div>
     </div>
@@ -256,11 +282,11 @@ function LanguageDropdown({ language, setLanguage }: { language: string; setLang
   
   return (
     <div style={{ position: 'relative' }}>
-      <button onClick={() => setOpen(!open)} style={{ fontSize: 18, cursor: 'pointer' }}>
+      <button onClick={() => setOpen(!open)} style={{ fontSize: 18, cursor: 'pointer' }} aria-label={`Language: ${current?.name || 'Select language'}`} aria-expanded={open} aria-haspopup="listbox">
         {current?.flag || '🌐'}
       </button>
       {open && (
-        <div style={{
+        <div role="listbox" aria-label="Select language" style={{
           position: 'absolute', top: '100%', right: 0,
           background: 'var(--bg-secondary)', border: '1px solid var(--border-color)',
           borderRadius: 10, padding: 4, minWidth: 140, zIndex: 20,
@@ -268,6 +294,8 @@ function LanguageDropdown({ language, setLanguage }: { language: string; setLang
         }}>
           {SUPPORTED_LANGUAGES.map(l => (
             <button key={l.code}
+              role="option"
+              aria-selected={l.code === language}
               onClick={() => { setLanguage(l.code); setOpen(false); }}
               style={{
                 width: '100%', padding: '8px 12px', borderRadius: 6,
