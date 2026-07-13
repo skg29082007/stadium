@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { ResponsiveContainer, XAxis, Tooltip, AreaChart, Area } from 'recharts';
 import { useRef, useEffect, useCallback } from 'react';
+import GenAIInsights from '../../components/shared/GenAIInsights';
 
 export default function CrowdAnalytics() {
   const snapshot = useCrowdStore((s) => s.snapshot);
@@ -204,6 +205,15 @@ export default function CrowdAnalytics() {
           </div>
         </div>
       </div>
+      
+      {/* GenAI Operational Insights */}
+      <GenAIInsights 
+        context="crowd" 
+        metrics={{
+          avgDensity: Math.round(snapshot?.avgDensity || 0),
+          activeZones: snapshot?.zones ? Object.keys(snapshot.zones).length : 0
+        }} 
+      />
 
       {/* Trend Chart */}
       <div className="card" style={{ padding: 20 }}>

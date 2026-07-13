@@ -11,9 +11,10 @@ import { formatNumber, formatPercent, getRiskColor, getDensityColor } from '../.
 import { densityToColor, hexToRgba } from '../../utils/colors';
 import {
   Users, AlertTriangle, Activity, Shield,
-  TrendingUp, TrendingDown, Minus, Zap,
+  TrendingUp, TrendingDown, Minus, Zap
 } from 'lucide-react';
 import { LineChart, Line, ResponsiveContainer, Tooltip, XAxis } from 'recharts';
+import GenAIInsights from '../../components/shared/GenAIInsights';
 
 export default function CommandCenter() {
   const snapshot = useCrowdStore((s) => s.snapshot);
@@ -216,11 +217,10 @@ export default function CommandCenter() {
                     fontSize: 12,
                   }}
                   labelFormatter={() => ''}
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  formatter={((value: any, name: any) => [
+                  formatter={(value: any, name: any) => [
                     name === 'total' ? Number(value).toLocaleString() : `${value}%`,
                     name === 'total' ? 'Attendance' : 'Avg Density'
-                  ]) as any}
+                  ]}
                 />
                 <Line type="monotone" dataKey="avg" stroke="#6c5ce7" strokeWidth={2} dot={false} />
                 <Line type="monotone" dataKey="total" stroke="#00d2a0" strokeWidth={1.5} dot={false} strokeDasharray="4 2" yAxisId="right" hide />
@@ -229,30 +229,14 @@ export default function CommandCenter() {
           </div>
         </div>
 
-        {/* Recent Alerts / AI Recommendations */}
-        <div className="card" style={{ padding: 20 }}>
-          <h3 style={{ fontSize: 'var(--text-sm)', fontWeight: 600, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
-            <Zap size={16} /> AI Recommendations
-          </h3>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {risk?.recommendations.map((rec, i) => (
-              <div key={i} style={{
-                padding: '10px 14px', borderRadius: 10,
-                background: 'var(--bg-tertiary)',
-                fontSize: 'var(--text-sm)', color: 'var(--text-secondary)',
-                borderLeft: '3px solid var(--color-primary)',
-                lineHeight: 1.5,
-              }}>
-                💡 {rec}
-              </div>
-            ))}
-            {(!risk || risk.recommendations.length === 0) && (
-              <div style={{ fontSize: 'var(--text-sm)', color: 'var(--text-tertiary)', padding: 20, textAlign: 'center' }}>
-                All operations normal — no recommendations at this time.
-              </div>
-            )}
-          </div>
-        </div>
+        <GenAIInsights 
+          context="command" 
+          metrics={{
+            temperature: 24, // Example metric
+            incidents: activeIncidents.length,
+            density: snapshot?.avgDensity || 0
+          }} 
+        />
       </div>
     </div>
   );

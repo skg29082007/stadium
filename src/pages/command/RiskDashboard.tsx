@@ -4,8 +4,9 @@ import { useIncidentStore, selectActiveIncidents } from '../../stores/incident-s
 import { calculateRisk, getRiskHistory, type RiskAssessment } from '../../engine/risk-engine';
 import { getRiskColor } from '../../utils/formatters';
 import { hexToRgba } from '../../utils/colors';
-import { TrendingUp, TrendingDown, Minus, FileText } from 'lucide-react';
+import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { LineChart, Line, ResponsiveContainer, ReferenceLine } from 'recharts';
+import GenAIInsights from '../../components/shared/GenAIInsights';
 
 export default function RiskDashboard() {
   const snapshot = useCrowdStore((s) => s.snapshot);
@@ -100,35 +101,14 @@ export default function RiskDashboard() {
         </div>
       </div>
 
-      {/* Situation Report */}
-      <div className="card" style={{ padding: 24 }}>
-        <h3 style={{ fontSize: 'var(--text-sm)', fontWeight: 600, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
-          <FileText size={16} /> AI Situation Report
-        </h3>
-        <div style={{
-          padding: 20, borderRadius: 12, background: 'var(--bg-tertiary)',
-          borderLeft: `4px solid ${color}`,
-          fontSize: 'var(--text-sm)', color: 'var(--text-secondary)', lineHeight: 1.7,
-        }}>
-          {risk?.summary || 'Generating situation report...'}
-        </div>
-        <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 8 }}>
-          <div style={{ fontSize: 'var(--text-xs)', fontWeight: 600, color: 'var(--text-tertiary)', textTransform: 'uppercase' }}>
-            Recommended Actions
-          </div>
-          {risk?.recommendations.map((rec, i) => (
-            <div key={i} style={{
-              padding: '10px 14px', borderRadius: 8,
-              background: 'var(--bg-input)',
-              fontSize: 'var(--text-sm)', color: 'var(--text-secondary)',
-              display: 'flex', alignItems: 'flex-start', gap: 8,
-            }}>
-              <span style={{ color: 'var(--color-primary)', fontWeight: 700, flexShrink: 0 }}>{i + 1}.</span>
-              {rec}
-            </div>
-          ))}
-        </div>
-      </div>
+      {/* GenAI Operational Insights */}
+      <GenAIInsights 
+        context="risk" 
+        metrics={{
+          activeIncidents: activeIncidents.length,
+          riskScore: risk?.overallScore || 0
+        }} 
+      />
     </div>
   );
 }

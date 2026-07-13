@@ -6,6 +6,7 @@ import {
   Plus, AlertTriangle,
   ChevronDown, X
 } from 'lucide-react';
+import GenAIInsights from '../../components/shared/GenAIInsights';
 
 export default function IncidentManager() {
   const { incidents, updateStatus, resolveIncident, addIncident } = useIncidentStore();
@@ -40,6 +41,13 @@ export default function IncidentManager() {
         <button className="btn btn-primary" onClick={() => setShowReportForm(true)}>
           <Plus size={16} /> Report Incident
         </button>
+      </div>
+
+      <div style={{ marginBottom: 24 }}>
+        <GenAIInsights 
+          context="risk" 
+          metrics={{ activeIncidents: incidents.filter(i => i.status !== 'RESOLVED').length }} 
+        />
       </div>
 
       {/* Status Tabs */}

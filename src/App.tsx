@@ -1,20 +1,20 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, lazy, Suspense } from 'react';
 import { useAppStore } from './stores/app-store';
 import { useCrowdStore } from './stores/crowd-store';
 import { useIncidentStore } from './stores/incident-store';
 import { CROWD_UPDATE_INTERVAL } from './utils/constants';
 
-import Landing from './pages/Landing';
-import CommandCenter from './pages/command/CommandCenter';
-import CrowdAnalytics from './pages/command/CrowdAnalytics';
-import RiskDashboard from './pages/command/RiskDashboard';
-import ScenarioSim from './pages/command/ScenarioSim';
-import IncidentManager from './pages/command/IncidentManager';
-import SustainabilityDashboard from './pages/command/SustainabilityDashboard';
-import FanHome from './pages/fan/FanHome';
-import FanNavigation from './pages/fan/FanNavigation';
-import StaffDashboard from './pages/staff/StaffDashboard';
+const Landing = lazy(() => import('./pages/Landing'));
+const CommandCenter = lazy(() => import('./pages/command/CommandCenter'));
+const CrowdAnalytics = lazy(() => import('./pages/command/CrowdAnalytics'));
+const RiskDashboard = lazy(() => import('./pages/command/RiskDashboard'));
+const ScenarioSim = lazy(() => import('./pages/command/ScenarioSim'));
+const IncidentManager = lazy(() => import('./pages/command/IncidentManager'));
+const SustainabilityDashboard = lazy(() => import('./pages/command/SustainabilityDashboard'));
+const FanHome = lazy(() => import('./pages/fan/FanHome'));
+const FanNavigation = lazy(() => import('./pages/fan/FanNavigation'));
+const StaffDashboard = lazy(() => import('./pages/staff/StaffDashboard'));
 import AppShell from './components/layout/AppShell';
 
 export default function App() {
@@ -67,20 +67,22 @@ export default function App() {
   }, [addRandomIncident]);
 
   return (
-    <Routes>
-      <Route path="/" element={<Landing />} />
-      <Route element={<AppShell />}>
-        <Route path="/command" element={<CommandCenter />} />
-        <Route path="/command/crowd" element={<CrowdAnalytics />} />
-        <Route path="/command/risk" element={<RiskDashboard />} />
-        <Route path="/command/scenarios" element={<ScenarioSim />} />
-        <Route path="/command/incidents" element={<IncidentManager />} />
-        <Route path="/command/sustainability" element={<SustainabilityDashboard />} />
-        <Route path="/staff" element={<StaffDashboard />} />
-      </Route>
-      <Route path="/fan" element={<FanHome />} />
-      <Route path="/fan/navigate" element={<FanNavigation />} />
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+    <Suspense fallback={<div style={{ display: 'flex', height: '100vh', width: '100vw', alignItems: 'center', justifyContent: 'center', color: 'var(--text-secondary)' }}>Loading...</div>}>
+      <Routes>
+        <Route path="/" element={<Landing />} />
+        <Route element={<AppShell />}>
+          <Route path="/command" element={<CommandCenter />} />
+          <Route path="/command/crowd" element={<CrowdAnalytics />} />
+          <Route path="/command/risk" element={<RiskDashboard />} />
+          <Route path="/command/scenarios" element={<ScenarioSim />} />
+          <Route path="/command/incidents" element={<IncidentManager />} />
+          <Route path="/command/sustainability" element={<SustainabilityDashboard />} />
+          <Route path="/staff" element={<StaffDashboard />} />
+        </Route>
+        <Route path="/fan" element={<FanHome />} />
+        <Route path="/fan/navigate" element={<FanNavigation />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </Suspense>
   );
 }
