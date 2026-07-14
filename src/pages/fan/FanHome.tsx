@@ -195,6 +195,9 @@ export default function FanHome() {
             }}>
               {msg.content}
 
+              {/* Visual Route Map for Navigation queries */}
+              {msg.routeData && <MiniRouteMap routeData={msg.routeData} />}
+
               {/* Suggestion chips */}
               {msg.suggestions && msg.suggestions.length > 0 && (
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 10 }}>
@@ -312,3 +315,213 @@ function LanguageDropdown({ language, setLanguage }: { language: string; setLang
     </div>
   );
 }
+
+interface MiniRouteMapProps {
+  routeData: {
+    from: string;
+    to: string;
+    distance: number;
+    minutes: number;
+    directions: { instruction: string; icon: string }[];
+    pathNodes?: { id: string; label: string; x: number; y: number; type: string }[];
+  };
+}
+
+function MiniRouteMap({ routeData }: MiniRouteMapProps) {
+  const { pathNodes, distance, minutes } = routeData;
+  if (!pathNodes || pathNodes.length < 2) return null;
+
+  // Build the SVG path string
+  // x and y are normalized 0-1, so we map them to 0-200 for a 200x200 SVG viewBox
+  const points = pathNodes.map(node => `${node.x * 200},${node.y * 200}`);
+  const pathD = `M ${points.join(' L ')}`;
+
+  const startNode = pathNodes[0];
+  const endNode = pathNodes[pathNodes.length - 1];
+
+  return (
+    <div style={{
+      marginTop: 12,
+      background: 'var(--bg-primary)',
+      border: '1px solid var(--border-color)',
+      borderRadius: 12,
+      overflow: 'hidden',
+      boxShadow: 'var(--shadow-sm)',
+    }}>
+      {/* Header bar with stats */}
+      <div style={{
+        padding: '8px 12px',
+        background: 'var(--bg-tertiary)',
+        borderBottom: '1px solid var(--border-color)',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        fontSize: 11,
+        fontWeight: 600,
+        color: 'var(--text-secondary)'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+          <span>📍</span>
+          <span>Route view</span>
+        </div>
+        <div style={{ display: 'flex', gap: 12 }}>
+          <span>📏 {distance}m</span>
+          <span>⏱️ {minutes === 1 ? '1 min' : `${Math.round(minutes)} mins`}</span>
+        </div>
+      </div>
+
+      {/* SVG Map Canvas */}
+      <div style={{
+        padding: 16,
+        background: 'var(--bg-card)',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        position: 'relative'
+      }}>
+        <style dangerouslySetInnerHTML={{__html: `
+          @keyframes routePulse {
+            to {
+              stroke-dashoffset: -20;
+            }
+          }
+          .animate-route-pulse {
+            animation: routePulse 1.5s linear infinite;
+          }
+        `}} />
+        <svg
+          viewBox="0 0 200 200"
+          width="100%"
+          height="150"
+          style={{ maxWidth: 200, maxHeight: 150 }}
+        >
+          {/* Stadium outer boundary ring */}
+          <ellipse
+            cx="100"
+            cy="100"
+            rx="85"
+            ry="85"
+            fill="none"
+            stroke="var(--border-color)"
+            strokeWidth="2"
+            strokeDasharray="4,4"
+          />
+          <ellipse
+            cx="100"
+            cy="100"
+            rx="75"
+            ry="75"
+            fill="none"
+            stroke="var(--border-color)"
+            strokeWidth="1"
+            opacity="0.5"
+          />
+
+          {/* Central soccer field/pitch */}
+          <rect
+            x="70"
+            y="80"
+            width="60"
+            height="40"
+            fill="rgba(46, 204, 113, 0.08)"
+            stroke="rgba(46, 204, 113, 0.25)"
+            strokeWidth="1.5"
+            rx="3"
+          />
+          {/* Center line of pitch */}
+          <line
+            x1="100" y1="80" x2="100" y2="120"
+            stroke="rgba(46, 204, 113, 0.2)"
+            strokeWidth="1.5"
+          />
+          {/* Center circle */}
+          <circle
+            cx="100" cy="100" r="10"
+            fill="none"
+            stroke="rgba(46, 204, 113, 0.2)"
+            strokeWidth="1.5"
+          />
+
+          {/* The Route Path Line */}
+          <path
+            d={pathD}
+            fill="none"
+            stroke="#6c5ce7"
+            strokeWidth="3.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            style={{
+              filter: 'drop-shadow(0 0 3px rgba(108, 92, 231, 0.5))'
+            }}
+          />
+          {/* Pulsing overlay path for animation */}
+          <path
+            d={pathD}
+            fill="none"
+            stroke="#a29bfe"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeDasharray="8,6"
+            className="animate-route-pulse"
+          />
+
+          {/* Start node dot */}
+          <circle
+            cx={startNode.x * 200}
+            cy={startNode.y * 200}
+            r="6"
+            fill="#00d2a0"
+            stroke="#fff"
+            strokeWidth="1.5"
+          />
+
+          {/* End node dot */}
+          <circle
+            cx={endNode.x * 200}
+            cy={endNode.y * 200}
+            r="7"
+            fill="#ef5350"
+            stroke="#fff"
+            strokeWidth="1.5"
+          />
+
+          {/* Labels for Start & End */}
+          <text
+            x={startNode.x * 200}
+            y={startNode.y * 200 - 9}
+            fill="var(--text-primary)"
+            fontSize="8"
+            fontWeight="bold"
+            textAnchor="middle"
+            style={{
+              paintOrder: 'stroke',
+              stroke: 'var(--bg-secondary)',
+              strokeWidth: 2,
+              strokeLinejoin: 'round'
+            }}
+          >
+            Start
+          </text>
+          <text
+            x={endNode.x * 200}
+            y={endNode.y * 200 - 10}
+            fill="var(--text-primary)"
+            fontSize="8"
+            fontWeight="bold"
+            textAnchor="middle"
+            style={{
+              paintOrder: 'stroke',
+              stroke: 'var(--bg-secondary)',
+              strokeWidth: 2,
+              strokeLinejoin: 'round'
+            }}
+          >
+            {endNode.label.split(' ')[0]}
+          </text>
+        </svg>
+      </div>
+    </div>
+  );
+}
+

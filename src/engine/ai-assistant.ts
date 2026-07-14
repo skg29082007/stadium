@@ -25,6 +25,7 @@ export interface ChatMessage {
     distance: number;
     minutes: number;
     directions: { instruction: string; icon: string }[];
+    pathNodes?: { id: string; label: string; x: number; y: number; type: string }[];
   };
   language?: string;
 }
@@ -96,6 +97,7 @@ const handlers: PatternHandler[] = [
         distance: result.totalDistance,
         minutes: result.estimatedMinutes,
         directions: result.directions.map(d => ({ instruction: d.instruction, icon: d.icon })),
+        pathNodes: result.path.map(n => ({ id: n.id, label: n.label, x: n.x, y: n.y, type: n.type })),
       });
     },
   },
@@ -121,6 +123,7 @@ const handlers: PatternHandler[] = [
         distance: result.totalDistance,
         minutes: result.estimatedMinutes,
         directions: result.directions.map(d => ({ instruction: d.instruction, icon: d.icon })),
+        pathNodes: result.path.map(n => ({ id: n.id, label: n.label, x: n.x, y: n.y, type: n.type })),
       });
     },
   },
@@ -138,6 +141,14 @@ const handlers: PatternHandler[] = [
       return msg(
         `🚻 **Nearest Restroom**\n\nLocated near ${nearest.label}\n⏱️ ~${time} walk\n\n${result ? result.directions.map((d, i) => `${i + 1}. ${d.icon} ${d.instruction}`).join('\n') : 'Head to the nearest concourse.'}`,
         ['Find nearest food', 'Back to my seat', 'Accessible restroom?'],
+        result ? {
+          from: ctx.currentZone,
+          to: nearest.id,
+          distance: result.totalDistance,
+          minutes: result.estimatedMinutes,
+          directions: result.directions.map(d => ({ instruction: d.instruction, icon: d.icon })),
+          pathNodes: result.path.map(n => ({ id: n.id, label: n.label, x: n.x, y: n.y, type: n.type })),
+        } : undefined
       );
     },
   },
@@ -157,6 +168,14 @@ const handlers: PatternHandler[] = [
         `**All Food Locations:**\n${allFood.map(f => `• ${f.label}`).join('\n')}\n\n` +
         `${result ? result.directions.map((d, i) => `${i + 1}. ${d.icon} ${d.instruction}`).join('\n') : ''}`,
         ['Find nearest restroom', 'What\'s on the menu?', 'Back to my seat'],
+        result ? {
+          from: ctx.currentZone,
+          to: nearest.id,
+          distance: result.totalDistance,
+          minutes: result.estimatedMinutes,
+          directions: result.directions.map(d => ({ instruction: d.instruction, icon: d.icon })),
+          pathNodes: result.path.map(n => ({ id: n.id, label: n.label, x: n.x, y: n.y, type: n.type })),
+        } : undefined
       );
     },
   },
@@ -176,6 +195,14 @@ const handlers: PatternHandler[] = [
         `${result ? result.directions.map((d, i) => `${i + 1}. ${d.icon} ${d.instruction}`).join('\n') : ''}\n\n` +
         `💡 You can also flag any volunteer (yellow vest) for immediate assistance.`,
         ['Call for help', 'Find nearest exit', 'I need water'],
+        nearest && result ? {
+          from: ctx.currentZone,
+          to: nearest.id,
+          distance: result.totalDistance,
+          minutes: result.estimatedMinutes,
+          directions: result.directions.map(d => ({ instruction: d.instruction, icon: d.icon })),
+          pathNodes: result.path.map(n => ({ id: n.id, label: n.label, x: n.x, y: n.y, type: n.type })),
+        } : undefined
       );
     },
   },
